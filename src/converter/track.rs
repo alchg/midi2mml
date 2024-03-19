@@ -143,11 +143,7 @@ impl Track {
         tick
     }
 
-    pub fn parse1(
-        &mut self,
-        ticks_per_beat: u32,
-        tempo_events: &mut Vec<TempoEvent>,
-    ) -> Result<(), String> {
+    pub fn parse1(&mut self, tempo_events: &mut Vec<TempoEvent>) -> Result<(), String> {
         println!("Track:{} Channel:{:?}", self.track_index, self.channels);
 
         self.events.sort_by(|e1, e2| {
@@ -311,17 +307,6 @@ impl Track {
             }
         }
 
-        for tempo_event in tempo_events.iter_mut() {
-            let remainder = Self::divsion_tick(ticks_per_beat, tempo_event.tick);
-            if remainder != 0 {
-                println!(
-                    "Warning! Tick:{} Tempo:{} Corrects Tempo Change timing.",
-                    tempo_event.tick, tempo_event.tempo
-                );
-                tempo_event.tick -= remainder;
-            }
-        }
-
         for channel_data in self.channel_data_list.iter() {
             for tempo_event in tempo_events.iter() {
                 if tempo_event.enable == true {
@@ -389,29 +374,6 @@ impl Track {
         });
         self.events
             .retain(|event| !timbre_events_delete.contains(event));
-
-        for event in self.events.iter_mut() {
-            if let DataKind::NoteOn(_) = event.data_kind {
-                let remainder = Self::divsion_tick(ticks_per_beat, event.tick);
-                if remainder != 0 {
-                    println!(
-                        "Warning! Tick:{} Channel:{} Sub:{} Kind:{:?} Corrects NoteOn timing.",
-                        event.tick, event.channel, event.sub_channel, event.data_kind
-                    );
-                    event.tick -= remainder;
-                }
-            }
-            if let DataKind::NoteOff(_) = event.data_kind {
-                let remainder = Self::divsion_tick(ticks_per_beat, event.tick);
-                if remainder != 0 {
-                    println!(
-                        "Warning! Tick:{} Channel:{} Sub:{} Kind:{:?} Corrects NoteOff timing.",
-                        event.tick, event.channel, event.sub_channel, event.data_kind
-                    );
-                    event.tick -= remainder;
-                }
-            }
-        }
 
         if self.events.len() >= 2 {
             for index in 0..self.events.len() - 1 {

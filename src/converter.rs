@@ -180,7 +180,7 @@ impl Converter {
         Self::delete_duplicate_tempo(&mut tempo_events);
 
         for index in 0..tracks.len() {
-            if let Err(msg) = tracks[index].parse1(self.ticks_per_beat, &mut tempo_events) {
+            if let Err(msg) = tracks[index].parse1(&mut tempo_events) {
                 return Err(msg);
             }
         }
